@@ -7,11 +7,11 @@ MODEL:
     EMBEDDING_DIM: 64
     MODEL_PATH: "/path/layoutlm-base-uncased/"
     USE_PRETRAIN_WEIGHT: True
-  PIXEL_MEAN: [ 127.5, 127.5, 127.5 ]
-  PIXEL_STD: [ 127.5, 127.5, 127.5 ]
+  PIXEL_MEAN: [127.5, 127.5, 127.5]
+  PIXEL_STD: [127.5, 127.5, 127.5]
   BACKBONE:
     NAME: "build_VGT_fpn_backbone"
-  WEIGHTS: "https://layoutlm.blob.core.windows.net/dit/dit-pts/dit-base-224-p16-500k-62d53a.pth"
+  WEIGHTS: ""
   VIT:
     NAME: "VGT_dit_base_patch16"
     MERGE_TYPE: "Sum"
@@ -33,4 +33,3 @@ TEST:
 DATASETS:
   TRAIN: ("docbank_train",)
   TEST: ("docbank_val",)
-  
