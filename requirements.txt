@@ -1,7 +1,7 @@
-torch==1.9.0
-torchvision==0.10.0
-timm==0.5.4
-Pillow==8.4.0
+torch
+torchvision
+timm
+Pillow
 blobfile
 mypy
 numpy
@@ -10,5 +10,5 @@ requests
 einops
 tensorboard
 scipy
-opencv-python==4.5.1.48
-Shapely==1.8.4
+opencv-python
+Shapely
