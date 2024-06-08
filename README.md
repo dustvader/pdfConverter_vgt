@@ -1,40 +1,266 @@
-# Advanced Literate Machinery
+# Vision Grid Transformer for Document Layout Analysis
+The official PyTorch implementation of VGT (ICCV 2023).
 
-## Introduction
+VGT is a two-stream multi-modal Vision Grid Transformer for document layout analysis, in which Grid Transformer (GiT) is proposed and pre-trained for 2D token-level and segment-level semantic understanding. By fully leveraging multi-modal information and exploiting pre-training techniques to learn better representation, VGT achieves highly competitive scores in the DLA task, and significantly outperforms the previous state-of-the-arts.
 
-The ultimate goal of our research is to build a system that has high-level intelligence, i.e., possessing the abilities to ***read, think and create***, so advanced that it could even surpass human intelligence one day in the future. We name this kind of systems **Advanced Literate Machinery (ALM)**.
 
-To start with, we currently focus on teaching machines to ***read*** from images and documents. In years to come, we will explore the possibilities of endowing machines with the intellectual capabilities of ***thinking and creating***, catching up with and surpassing [GPT-4](https://openai.com/research/gpt-4) and [GPT-4V](https://openai.com/research/gpt-4v-system-card).
+## Paper
+* [ICCV 2023]
+* [Arxiv](https://arxiv.org/abs/2308.14978)
 
-This project is maintained by the **读光 OCR Team** (读光-Du Guang means “*Reading The Light*”) in the [Tongyi Lab, Alibaba Group](https://tongyi.aliyun.com/).
 
-![Logo](./resources/DuGuang.png)
+![VGT Model](figures/VGT_model.jpg)
 
-Visit our [读光-Du Guang Portal](https://duguang.aliyun.com/) and [DocMaster](https://www.modelscope.cn/studios/damo/DocMaster/summary) to experience online demos for OCR and Document Understanding.
+## Install requirements
+* [PyTorch](http://pytorch.org/) version >= 1.8.0
+* Python version >= 3.6
 
-## Recent Updates
+```bash
+pip install -r requirements.txt
+# Install `git lfs`
+curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+sudo apt-get install git-lfs
+```
 
-**2024.4 Release**
-  - [**OmniParser**](./OCR/OmniParser/) (*OmniParser: A Unified Framework for Text Spotting, Key Information Extraction and Table Recognition,* CVPR 2024. [paper](https://arxiv.org/abs/2403.19128)): We propose a universal model for parsing visually-situated text across diverse scenarios, called OmniParser, which can simultaneously handle three typical visually-situated text parsing tasks: text spotting, key information extraction, and table recognition. In OmniParser, all tasks share the **unified encoder-decoder architecture**, the unified objective: **point-conditioned text generation**, and the unified input & output representation: **prompt & structured sequences**.
+The required packages including: [Pytorch](https://pytorch.org/) version 1.9.0, [torchvision](https://pytorch.org/vision/stable/index.html) version 0.10.0 and [Timm](https://github.com/rwightman/pytorch-image-models) version 0.5.4, etc.
 
-**2024.3 Release**
-  - [**GEM**](./DocumentUnderstanding/GEM/) (*GEM: Gestalt Enhanced Markup Language Model for Web Understanding via Render Tree,* EMNLP 2023. [paper](https://aclanthology.org/2023.emnlp-main.375.pdf)): Web pages serve as crucial carriers for humans to acquire and perceive information. Inspired by the Gestalt psychological theory, we propose an innovative Gestalt Enhanced Markup Language Model (GEM for short) for **hosting heterogeneous visual information from render trees of web pages**, leading to excellent performances on tasks such as web question answering and web information extraction.
+For mixed-precision training, please install [apex](https://github.com/NVIDIA/apex)
+```
+git clone https://github.com/NVIDIA/apex
+cd apex
+pip install -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
+```
+For object detection, please additionally install detectron2 library. Refer to the [Detectron2's INSTALL.md](https://github.com/facebookresearch/detectron2/blob/main/INSTALL.md).
 
-**2023.9 Release**
-  - [**DocXChain**](./Applications/DocXChain/) (*DocXChain: A Powerful Open-Source Toolchain for Document Parsing and Beyond,* arXiv 2023. [report](https://arxiv.org/abs/2310.12430)): To **promote the level of digitization and structurization for documents**, we develop and release an open-source toolchain, called DocXChain, for precise and detailed document parsing. Currently, basic capabilities, including text detection, text recognition, table structure recognition, and layout analysis, are provided. Also, typical pipelines, i.e., general text reading, table parsing, and document structurization, are built to support more complicated applications related to documents. Most of the algorithmic models are from [ModelScope](https://github.com/modelscope/modelscope). Formula recognition (using models from [RapidLatexOCR](https://github.com/RapidAI/RapidLatexOCR)) and whole PDF conversion (PDF to JSON format) are now supported.
-  - [**LISTER**](./OCR/LISTER/) (*LISTER: Neighbor Decoding for Length-Insensitive Scene Text Recognition,* ICCV 2023. [paper](https://arxiv.org/abs/2308.12774v1)): We propose a method called Length-Insensitive Scene TExt Recognizer (LISTER), which remedies the limitation regarding the **robustness to various text lengths**. Specifically, a Neighbor Decoder is proposed to obtain accurate character attention maps with the assistance of a novel neighbor matrix regardless of the text lengths. Besides, a Feature Enhancement Module is devised to model the long-range dependency with low computation cost, which is able to perform iterations with the neighbor decoder to enhance the feature map progressively..
-  - [**VGT**](./DocumentUnderstanding/VGT/) (*Vision Grid Transformer for Document Layout Analysis,* ICCV 2023. [paper](https://arxiv.org/abs/2308.14978)): To **fully leverage multi-modal information and exploit pre-training techniques to learn better representation** for document layout analysis (DLA), we present VGT, a two-stream Vision Grid Transformer, in which Grid Transformer (GiT) is proposed and pre-trained for 2D token-level and segment-level semantic understanding. In addition, a new benchmark for assessing document layout analysis algorithms, called [D^4LA](https://modelscope.cn/datasets/damo/D4LA/summary), is curated and released.
-  - [**VLPT-STD**](./OCR/VLPT-STD/) (*Vision-Language Pre-Training for Boosting Scene Text Detectors,* CVPR 2022. [paper](https://arxiv.org/abs/2204.13867)): We adapt **vision-language joint learning for scene text detection**, a task that intrinsically involves cross-modal interaction between the two modalities: vision and language. The pre-trained model is able to produce more informative representations with richer semantics, which could readily benefit existing scene text detectors (such as EAST and DB) in the down-stream text detection task.
+```bash
+# Install `detectron2`
+python -m pip install detectron2==0.6 -f \
+    https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.9/index.html
+```
 
-**2023.6 Release**
-  - [**LiteWeightOCR**](./OCR/LiteWeightOCR/) (*Building A Mobile Text Recognizer via Truncated SVD-based Knowledge Distillation-Guided NAS,* BMVC 2023. [paper](https://papers.bmvc2023.org/0375.pdf)): To make OCR models **deployable on mobile devices while keeping high accuracy**, we propose a light-weight text recognizer that integrates Truncated Singular Value Decomposition (TSVD)-based Knowledge Distillation (KD) into the Neural Architecture Search (NAS) process.
+## Pretrained models
+We provide the pretrained GiT weights in VGT, which are pretrained by the proposed MGLM and SLM tasks.
 
-**2023.4 Release**
-  - [**GeoLayoutLM**](./DocumentUnderstanding/GeoLayoutLM/) (*GeoLayoutLM: Geometric Pre-training for Visual Information Extraction,* CVPR 2023. [paper](https://arxiv.org/abs/2304.10759)): We propose a multi-modal framework, named GeoLayoutLM, for Visual Information Extraction (VIE). In contrast to previous methods for document pre-training, which usually learn geometric representation in an implicit way, GeoLayoutLM **explicitly models the geometric relations of entities in documents**.
+| GiT-pretrian |
+| :---: |
+|[VGT-pretrain-model](https://github.com/AlibabaResearch/AdvancedLiterateMachinery/releases/download/v1.3.0-VGT-release/VGT_pretrain_model.pth)|
 
-**2023.2 Release**
-  - [**LORE-TSR**](./DocumentUnderstanding/LORE-TSR/) (*LORE: Logical Location Regression Network for Table Structure Recognition,* AAAI 2022. [paper](https://arxiv.org/abs/2303.03730)): We model Table Structure Recognition (TSR) as a logical location regression problem and propose a new algorithm called LORE, standing for LOgical location REgression network, which for the first time **combines logical location regression together with spatial location regression** of table cells.
+For the ViT weights in VGT, please download checkpoints in DiT-base: [dit_base_patch16_224](https://github.com/microsoft/unilm/tree/master/dit)
 
-**2022.9 Release**
-  - [**MGP-STR**](./OCR/MGP-STR/) (*Multi-Granularity Prediction for Scene Text Recognition,* ECCV 2022. [paper](https://arxiv.org/abs/2209.03592)): Based on [ViT](https://arxiv.org/abs/2010.11929) and a tailored Adaptive Addressing and Aggregation module, we explore an implicit way for incorporating linguistic knowledge by introducing subword representations to facilitate **multi-granularity** prediction and fusion in scene text recognition.
-  - [**LevOCR**](./OCR/LevOCR/) (*Levenshtein OCR,* ECCV 2022. [paper](https://arxiv.org/abs/2209.03594)): Inspired by [Levenshtein Transformer](https://arxiv.org/abs/1905.11006), we cast the problem of scene text recognition as an iterative sequence refinement process, which allows for **parallel decoding, dynamic length change and good interpretability**.
+We load these two weights for VGT training.
+
+
+## Data Preparation
+**PubLayNet** [link](https://github.com/ibm-aur-nlp/PubLayNet/tree/master)
+
+Download the data from this [link](https://dax-cdn.cdn.appdomain.cloud/dax-publaynet/1.0.0/PubLayNet_PDF.tar.gz) (~96GB). 
+PubLayNet provides the original PDFs, and we use pdfplumber to generate OCR informantions for grid generation.
+Download the grid pkl from [link](https://www.modelscope.cn/datasets/damo/GridforVGT/summary). 
+The structure of data folder is as below.
+
+```
+publaynet
+├── train
+│   ├── 1.jpg
+├── val
+│   ├── 2.jpg
+├── test
+│   ├── 3.jpg
+├── VGT_publaynet_grid_pkl
+│   ├── 1.pdf.pkl
+│   └── 2.pdf.pkl
+├── train.json
+├── val.json
+├── test.json
+```
+
+**Docbank** 
+
+Download the original data `DocBank_500K_ori_img.zip` and `MSCOCO_Format_Annotation.zip` from the Docbank website [link](https://doc-analysis.github.io/docbank-page/index.html).
+However, the categories of `MSCOCO_Format_Annotation.zip` are not matched with the dataset. And we provide new annotations with fixed categories in `DocBank.zip` from [link](https://www.modelscope.cn/datasets/damo/GridforVGT/summary).
+
+We use duguang OCR Parser to generate OCR informantions for grid generation.
+Download the grid pkl from [link](https://www.modelscope.cn/datasets/damo/GridforVGT/summary). 
+The structure of data folder is as below.
+
+```
+DocBank
+├── DocBank_500K_ori_img
+│   ├── 1.jpg
+├── VGT_docbank_grid_pkl
+│   ├── 1.pkl
+│   └── 2.pkl
+├── 500K_train_VGT.json
+├── 500K_valid_VGT.json
+```
+
+**D4LA**
+
+Download the original data (images, annotations and grid) from the D4LA website [link](https://modelscope.cn/datasets/damo/D4LA/summary).
+The structure of data folder is as below.
+
+```
+D4LA
+├── train_images
+│   ├── 1.jpg
+├── test_images
+│   ├── 2.jpg
+├── VGT_D4LA_grid_pkl
+│   ├── 1.pkl
+│   └── 2.pkl
+├── json
+│   ├── train.json
+│   └── test.json
+```
+
+**Doclaynet** 
+
+Download the `DocLayNet core dataset` (~28GB) from the DocLayNet website [link](https://github.com/DS4SD/DocLayNet).
+DocLayNet also provides the original PDFs in `DocLayNet extra files`, and we use pdfplumber to generate OCR informantions for grid generation.
+Download the grid pkl from [link](https://www.modelscope.cn/datasets/damo/GridforVGT/summary). 
+The structure of data folder is as below.
+
+```
+Doclaynet
+├── COCO
+│   ├── train.json
+│   └── val.json
+├── PNG
+│   ├── 1.png
+│   └── 2.png
+├── VGT_DocLayNet_grid_pkl
+│   ├── 1.pkl
+│   └── 2.pkl
+```
+
+
+## Embedding Preparation
+If we want to train VGT from scratch or train VGT without pretrained models, we need to set `MODEL.WORDGRID.MODEL_PATH` to `<embedding_file_path>` and `MODEL.WORDGRID.USE_PRETRAIN_WEIGHT` as `True`. Here, VGT supports [bert-base-uncased](https://huggingface.co/bert-base-uncased), [bros-base-uncased](https://huggingface.co/naver-clova-ocr/bros-base-uncased) and [layoutlm-base-uncased](https://huggingface.co/microsoft/layoutlm-base-uncased) embeddings.
+
+
+## Evaluation
+We summarize the validation results as follows. We also provide the fine-tuned weights as in the paper.
+
+| name | dataset | detection algorithm | mAP  | weight |
+|------------|:----------------------------------------|:----------:|:-------:|-----|
+| VGT | Publaynet | Cascade R-CNN | 96.2 | [link](https://github.com/AlibabaResearch/AdvancedLiterateMachinery/releases/download/v1.3.0-VGT-release/publaynet_VGT_model.pth)|
+| VGT | Docbank | Cascade R-CNN | 84.1 | [link](https://github.com/AlibabaResearch/AdvancedLiterateMachinery/releases/download/v1.3.0-VGT-release/docbank_VGT_model.pth) |
+| VGT | D4LA | Cascade R-CNN | 68.8 | [link](https://github.com/AlibabaResearch/AdvancedLiterateMachinery/releases/download/v1.3.0-VGT-release/D4LA_VGT_model.pth) |
+
+
+Besides Publaynet, Docbank and D4LA, we also evaluate VGT on Doclaynet dataset.
+
+| name | dataset | detection algorithm | mAP  | weight |
+|------------|:----------------------------------------|:----------:|:-------:|-----|
+| X101 | Doclaynet | Cascade R-CNN | 74.6 | - |
+| LayoutlmV3 | Doclaynet | Cascade R-CNN | 76.8 | - |
+| DiT_base | Doclaynet | Cascade R-CNN | 80.3 | - |
+| VGT w/o pretrain | Doclaynet | Cascade R-CNN | 82.6 | - |
+| VGT with pretrain | Doclaynet | Cascade R-CNN | 83.7 | [link](https://github.com/AlibabaResearch/AdvancedLiterateMachinery/releases/download/v1.3.0-VGT-release/doclaynet_VGT_model.pth) |
+
+
+Following commands provide an example to evaluate the fine-tuned checkpoints.
+The config files can be found in `Configs`.
+
+1) Evaluate the fine-tuned checkpoint of VGT with Cascade R-CNN on PublayNet:
+```bash
+python train_VGT.py --config-file Configs/cascade/publaynet_VGT_cascade_PTM.yaml --eval-only --num-gpus 1 MODEL.WEIGHTS <finetuned_checkpoint_file_path> OUTPUT_DIR <your_output_dir> 
+``` 
+## PDF Preprocessing
+Before inference, a pdf file needs to be converted into images and `pkl` file needs to be generated for each page
+
+### Generating Images
+One can convert PDF to a set of image using this code:
+```bash
+python pdf2img.py \
+--pdf 'input-pdf-path' \
+--output 'output-folder-path' \
+--format 'png'
+```
+
+### Generating grid information
+Every file requires a `pkl` file that contains the grid information necessary for Grid Transformer.
+In order to create this file for a **MACHINE-READABLE** PDF, run the following code:
+```bash
+python create_grid_input.py \
+--pdf 'path-to-pdf-file' \
+--output 'path-to-output-folder' \
+--tokenizer 'google-bert/bert-base-uncased' \
+--model 'doclaynet'
+```
+Default tokenizer is `google-bert/bert-base-uncased` and default model is `doclaynet`
+Based on the model selected, the extensions might change from `pkl` to `pdf.pkl`.
+
+
+## Inference
+One can run inference using the `inference.py` script to use VGT model. It can be run as follows.
+```bash
+python inference.py \
+--image_root '/DocBank_root_path/DocBank/DocBank_500K_ori_img/' \
+--grid_root '/DocBank_root_path/DocBank/VGT_docbank_grid_pkl/' \
+--image_name '1.tar_1401.0001.gz_infoingames_without_metric_arxiv_47_ori' \
+--dataset docbank \
+--output_root <your_output_dir> / \
+--config Configs/cascade/docbank_VGT_cascade_PTM.yaml \
+--opts MODEL.WEIGHTS  <finetuned_checkpoint_file_path> 
+``` 
+
+
+## Training
+
+### Fine-tuning on Publaynet
+```bash
+python train_VGT.py --config-file Configs/cascade/publaynet_VGT_cascade_PTM.yaml --num-gpus 8 MODEL.WEIGHTS <VGT-pretrain-model_file_path> OUTPUT_DIR <your_output_dir> 
+``` 
+
+### Fine-tuning on Docbank
+```bash
+python train_VGT.py --config-file Configs/cascade/docbank_VGT_cascade_PTM.yaml --num-gpus 8 MODEL.WEIGHTS <VGT-pretrain-model_file_path> OUTPUT_DIR <your_output_dir> 
+``` 
+
+### Fine-tuning on D4LA
+```bash
+python train_VGT.py --config-file Configs/cascade/D4LA_VGT_cascade_PTM.yaml --num-gpus 8 MODEL.WEIGHTS <VGT-pretrain-model_file_path> OUTPUT_DIR <your_output_dir> 
+``` 
+
+### Fine-tuning on Doclaynet
+```bash
+python train_VGT.py --config-file Configs/cascade/doclaynet_VGT_cascade_PTM.yaml --num-gpus 8 MODEL.WEIGHTS <VGT-pretrain-model_file_path> OUTPUT_DIR <your_output_dir> 
+``` 
+
+## Citation
+
+If you find this repository useful, please consider citing our work:
+```
+@inproceedings{da2023vgt,
+    title={Vision Grid Transformer for Document Layout Analysis},
+    author={Cheng Da and Chuwei Luo and Qi Zheng and Cong Yao},
+    year={2023},
+    booktitle = {ICCV},
+}
+```
+
+## Acknowledgement
+
+This repository is built using the [timm](https://github.com/rwightman/pytorch-image-models) library, the [detectron2](https://github.com/facebookresearch/detectron2) library, the [DeiT](https://github.com/facebookresearch/deit) repository, the [Dino](https://github.com/facebookresearch/dino) repository, the [BEiT](https://github.com/microsoft/unilm/tree/master/beit) repository, the [MPViT](https://github.com/youngwanLEE/MPViT) repository and the [DiT](https://github.com/microsoft/unilm/tree/master/dit) repository.
+
+## License
+
+VGT is released under the terms of the [Apache License, Version 2.0](LICENSE).
+
+```
+VGT is an algorithm for Document Layout Analysis and the code and models herein created by the authors from Alibaba can only be used for research purpose.
+Copyright (C) 1999-2022 Alibaba Group Holding Ltd. 
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
