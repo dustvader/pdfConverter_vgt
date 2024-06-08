@@ -9,6 +9,8 @@ pytest
 requests
 einops
 tensorboard
-scipy
+scipys
 opencv-python
 Shapely
+pdf2image
+pdfplumber
