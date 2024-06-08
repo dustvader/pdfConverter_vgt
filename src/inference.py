@@ -90,7 +90,18 @@ def main():
     predictor = DefaultPredictor(cfg)
 
     # Step 5: run inference
+    print("Attempting to load image from", image_path)
+
+    # Load the image
     img = cv2.imread(image_path)
+
+    # Check if the image was loaded correctly
+    if img is None:
+        print(
+            "Error: The image could not be loaded. Please check the file path and format."
+        )
+    else:
+        print("Image loaded successfully. Image shape:", img.shape)
 
     md = MetadataCatalog.get(cfg.DATASETS.TEST[0])
     if args.dataset == "publaynet":
