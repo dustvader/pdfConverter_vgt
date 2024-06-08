@@ -9,7 +9,7 @@ pytest
 requests
 einops
 tensorboard
-scipys
+scipy
 opencv-python
 Shapely
 pdf2image
