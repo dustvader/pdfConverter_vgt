@@ -49,7 +49,7 @@ def tokenize(tokenizer, text_body):
         text_body,
         return_token_type_ids=False,
         return_attention_mask=False,
-        add_special_tokens=False
+        add_special_tokens=False,
     )
     return tokenized_inputs["input_ids"]
 
@@ -104,7 +104,7 @@ def create_grid_dict(tokenizer, page_data):
         "input_ids": [],
         "bbox_subword_list": [],
         "texts": [],
-        "bbox_texts_list": []
+        "bbox_texts_list": [],
     }
 
     for ele in page_data:
@@ -112,10 +112,8 @@ def create_grid_dict(tokenizer, page_data):
 
         # since expected bbox format is (x,y,width,height)
         grid["bbox_texts_list"].append(
-            (ele["x0"],
-             ele["top"],
-             ele["x1"]-ele["x0"],
-             ele["bottom"]-ele["top"]))
+            (ele["x0"], ele["top"], ele["x1"] - ele["x0"], ele["bottom"] - ele["top"])
+        )
 
     input_ids = tokenize(tokenizer, grid["texts"])
 
@@ -123,11 +121,8 @@ def create_grid_dict(tokenizer, page_data):
     grid["input_ids"] = np.concatenate(input_ids)
 
     grid["bbox_subword_list"] = np.array(
-        readjust_bbox_coords(
-            grid["bbox_texts_list"],
-            input_ids
-            )
-        )
+        readjust_bbox_coords(grid["bbox_texts_list"], input_ids)
+    )
 
     grid["bbox_texts_list"] = np.array(grid["bbox_texts_list"])
 
@@ -158,11 +153,9 @@ def save_pkl_file(grid, output_dir, output_file, model="doclaynet"):
     else:
         extension = "pkl"
 
-    pkl_save_location = os.path.join(
-        output_dir,
-        f'{output_file}.{extension}')
+    pkl_save_location = os.path.join(output_dir, f"{output_file}.{extension}")
 
-    with open(pkl_save_location, 'wb') as handle:
+    with open(pkl_save_location, "wb") as handle:
         pickle.dump(grid, handle)
 
 
@@ -184,21 +177,22 @@ def select_tokenizer(tokenizer):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pdf",
-                        required=True,
-                        help="Path to the PDF file")
-    parser.add_argument("--output",
-                        required=False,
-                        default="grid",
-                        help="Path to the output folder")
-    parser.add_argument("--tokenizer",
-                        required=False,
-                        default="google-bert/bert-base-uncased",
-                        help="Tokenizer to be used")
-    parser.add_argument("--model",
-                        required=False,
-                        default="doclaynet",
-                        help="VGT fine-tuned model to use")
+    parser.add_argument("--pdf", required=True, help="Path to the PDF file")
+    parser.add_argument(
+        "--output", required=False, default="grid", help="Path to the output folder"
+    )
+    parser.add_argument(
+        "--tokenizer",
+        required=False,
+        default="google-bert/bert-base-uncased",
+        help="Tokenizer to be used",
+    )
+    parser.add_argument(
+        "--model",
+        required=False,
+        default="doclaynet",
+        help="VGT fine-tuned model to use",
+    )
 
     args = parser.parse_args()
 
@@ -212,4 +206,4 @@ if __name__ == "__main__":
     for page in range(len(word_grid)):
 
         grid = create_grid_dict(tokenizer, word_grid[page])
-        save_pkl_file(grid, args.output, f"page_{page}", page, args.model)
+        save_pkl_file(grid, args.output, f"page_{page}", args.model)
