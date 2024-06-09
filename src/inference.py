@@ -5,6 +5,7 @@ import cv2
 from ditod import add_vit_config
 
 import torch
+import os
 
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import ColorMode, Visualizer
@@ -173,6 +174,8 @@ def main():
             ]
         )
 
+    print("Running inference on", image_path)
+
     output = predictor(img, grid_path)["instances"]
 
     # import ipdb;ipdb.set_trace()
@@ -180,7 +183,10 @@ def main():
     result = v.draw_instance_predictions(output.to("cpu"))
     result_image = result.get_image()[:, :, ::-1]
 
+    print("Saving result to", output_file_name)
     # step 6: save
+    if not os.path.exists(args.output_root):
+        os.makedirs(args.output_root)
     cv2.imwrite(output_file_name, result_image)
 
 
