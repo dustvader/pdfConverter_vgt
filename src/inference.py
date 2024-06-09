@@ -148,7 +148,7 @@ def main():
     for image_path in image_paths:
         image_name = os.path.splitext(os.path.basename(image_path))[0]
 
-        if args.dataset in ("D4LA", "doclaynet"):
+        if args.dataset in ("D4LA", "doclaynet", "docbank"):
             grid_path = os.path.join(args.grid_root, image_name + ".pkl")
         else:
             grid_path = os.path.join(args.grid_root, image_name + ".pdf.pkl")
