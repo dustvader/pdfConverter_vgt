@@ -176,11 +176,17 @@ def main():
 
     print("Running inference on", image_path)
 
-    output = predictor(img, grid_path)["instances"]
+    output = predictor(img, grid_path)
+
+    # Filter instances based on confidence threshold
+    confidence_threshold = 0.8
+    instances = output["instances"]
+    high_confidence_idxs = instances.scores > confidence_threshold
+    filtered_instances = instances[high_confidence_idxs]
 
     # import ipdb;ipdb.set_trace()
     v = Visualizer(img[:, :, ::-1], md, scale=1.0, instance_mode=ColorMode.SEGMENTATION)
-    result = v.draw_instance_predictions(output.to("cpu"))
+    result = v.draw_instance_predictions(filtered_instances.to("cpu"))
     result_image = result.get_image()[:, :, ::-1]
 
     print("Saving result to", output_file_name)
