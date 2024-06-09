@@ -1,9 +1,12 @@
 import argparse
+
 import cv2
-import os
-import time
+
 from ditod import add_vit_config
+
 import torch
+import os
+
 from detectron2.config import get_cfg
 from detectron2.utils.visualizer import ColorMode, Visualizer
 from detectron2.data import MetadataCatalog
@@ -25,10 +28,15 @@ def main():
         required=True,
     )
     parser.add_argument(
-        "--output_root",
-        help="Name of the output visualization folder.",
+        "--image_name",
+        help="Path to input image",
         type=str,
         required=True,
+    )
+    parser.add_argument(
+        "--output_root",
+        help="Name of the output visualization file.",
+        type=str,
     )
     parser.add_argument(
         "--dataset",
@@ -52,28 +60,54 @@ def main():
     args = parser.parse_args()
 
     # Get paths to images
-    image_paths = [
-        os.path.join(args.image_root, f)
-        for f in os.listdir(args.image_root)
-        if f.endswith((".png", ".jpg", ".jpeg"))
-    ]
 
-    # Initialize the configuration
+    # Batch process all images in the folder (measure inference time and print it)
+
+    if args.dataset in ("D4LA", "doclaynet"):
+        image_path = args.image_root + args.image_name + ".png"
+    else:
+        image_path = args.image_root + args.image_name + ".jpg"
+
+    if args.dataset == "publaynet":
+        grid_path = args.grid_root + args.image_name + ".pdf.pkl"
+    elif args.dataset == "docbank":
+        grid_path = args.grid_root + args.image_name + ".pkl"
+    elif args.dataset == "D4LA":
+        grid_path = args.grid_root + args.image_name + ".pkl"
+    elif args.dataset == "doclaynet":
+        grid_path = args.grid_root + args.image_name + ".pdf.pkl"
+
+    output_file_name = args.output_root + args.image_name + ".jpg"
+
+    # Step 1: instantiate config
     cfg = get_cfg()
     add_vit_config(cfg)
     cfg.merge_from_file(args.config_file)
 
-    # Add model weights URL to config
+    # Step 2: add model weights URL to config
     cfg.merge_from_list(args.opts)
 
-    # Set device
+    # Step 3: set device
     device = "cuda" if torch.cuda.is_available() else "cpu"
     cfg.MODEL.DEVICE = device
 
-    # Define model
+    # Step 4: define model
     predictor = DefaultPredictor(cfg)
 
-    # Metadata setup based on dataset
+    # Step 5: run inference
+    print("Attempting to load image from", image_path)
+
+    # Load the image
+    img = cv2.imread(image_path)
+
+    # Check if the image was loaded correctly
+    if img is None:
+        print(
+            "Error: The image could not be loaded. Please check the file path and format."
+        )
+    else:
+        print("Image loaded successfully. Image shape:", img.shape)
+
     md = MetadataCatalog.get(cfg.DATASETS.TEST[0])
     if args.dataset == "publaynet":
         md.set(thing_classes=["text", "title", "list", "table", "figure"])
@@ -144,56 +178,26 @@ def main():
             ]
         )
 
-    # Process each image
-    for image_path in image_paths:
-        image_name = os.path.splitext(os.path.basename(image_path))[0]
+    print("Running inference on", image_path)
 
-        if args.dataset in ("D4LA", "doclaynet"):
-            grid_path = os.path.join(args.grid_root, image_name + ".pkl")
-        else:
-            grid_path = os.path.join(args.grid_root, image_name + ".pdf.pkl")
+    output = predictor(img, grid_path)
 
-        output_file_name = os.path.join(args.output_root, image_name + ".jpg")
+    # Filter instances based on confidence threshold
+    confidence_threshold = 0.8
+    instances = output["instances"]
+    high_confidence_idxs = instances.scores > confidence_threshold
+    filtered_instances = instances[high_confidence_idxs]
 
-        print("Attempting to load image from", image_path)
+    # import ipdb;ipdb.set_trace()
+    v = Visualizer(img[:, :, ::-1], md, scale=1.0, instance_mode=ColorMode.SEGMENTATION)
+    result = v.draw_instance_predictions(filtered_instances.to("cpu"))
+    result_image = result.get_image()[:, :, ::-1]
 
-        # Load the image
-        img = cv2.imread(image_path)
-
-        # Check if the image was loaded correctly
-        if img is None:
-            print(
-                "Error: The image could not be loaded. Please check the file path and format."
-            )
-            continue
-        else:
-            print("Image loaded successfully. Image shape:", img.shape)
-
-        # Run inference and measure time
-        start_time = time.time()
-        output = predictor(img, grid_path)
-        end_time = time.time()
-        inference_time = end_time - start_time
-        print(f"Inference time for {image_path}: {inference_time:.2f} seconds")
-
-        # Filter instances based on confidence threshold
-        confidence_threshold = 0.8
-        instances = output["instances"]
-        high_confidence_idxs = instances.scores > confidence_threshold
-        filtered_instances = instances[high_confidence_idxs]
-
-        # Visualize the filtered instances
-        v = Visualizer(
-            img[:, :, ::-1], md, scale=1.0, instance_mode=ColorMode.SEGMENTATION
-        )
-        result = v.draw_instance_predictions(filtered_instances.to("cpu"))
-        result_image = result.get_image()[:, :, ::-1]
-
-        print("Saving result to", output_file_name)
-        # Save the result image
-        if not os.path.exists(args.output_root):
-            os.makedirs(args.output_root)
-        cv2.imwrite(output_file_name, result_image)
+    print("Saving result to", output_file_name)
+    # step 6: save
+    if not os.path.exists(args.output_root):
+        os.makedirs(args.output_root)
+    cv2.imwrite(output_file_name, result_image)
 
 
 if __name__ == "__main__":
